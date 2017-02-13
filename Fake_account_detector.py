@@ -41,4 +41,28 @@ df_le = pd.DataFrame(le_list, columns=['id', 'post', 'fake'])
 
 df = pd.concat([df, df_le], axis=0, ignore_index=True)
 
+del df_le
+
 print(df.shape)
+
+
+### EDA and engineering for new features 
+
+## post length 
+
+df['post_len'] = df['post'].apply(lambda x: len(x))
+df['post_len'].describe()
+
+# visualization for the distribution of post length by account type 
+fig, axes = plt.subplots(figsize=[10, 10])
+for fake_type in np.unique(df['fake']):
+    sns.distplot(df['post_len'][df['fake'] == fake_type], bins=50,
+                 kde=True, label=str(fake_type), hist_kws={'alpha':0.5,
+                    'edgecolor':'none'})
+axes.legend()
+axes.set_title('Post Length by Fake or Not')
+axes.set_xlabel('Post Length')
+
+## cut the post into words 
+import jieba 
+df['post_cut'] = df['post'].apply(lambda x: list(jieba.cut(x)))

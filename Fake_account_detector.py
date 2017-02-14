@@ -64,5 +64,42 @@ axes.set_title('Post Length by Fake or Not')
 axes.set_xlabel('Post Length')
 
 ## cut the post into words 
+import time
+start_time = time.time()
 import jieba 
 df['post_cut'] = df['post'].apply(lambda x: list(jieba.cut(x)))
+print(time.time() - start_time)
+# remove the stopwords and non-word symbol, and then count the words 
+# using mapping function 
+
+import os 
+os.chdir(r'D:\Code\Python\Add_in')
+stop_words = open('Stop_words_Simplified_Chinese_English.txt', 'r', encoding = 'utf-8') # read the file with chinese words 
+stop_words = stop_words.readlines() 
+stop_words = [x.strip('\n') for x in stop_words]  
+import re              
+              
+def remove_stop_punc(text):
+    text = re.sub(r'\W', ' ', text) # remove punctuations
+    word_list = list(jieba.cut(text))
+    word_list = list(np.setdiff1d(word_list, (stop_words+[' '])))
+    
+    return word_list
+
+start_time = time.time()    
+df['post_cut_filtered'] = df['post'].apply(lambda x: remove_stop_punc(x))
+print(time.time() - start_time)
+
+### output the dataframe for saving time 
+#os.chdir(r'D:\Dataset\Side_project_Fake_account_detector')
+#df.to_csv('Account.csv', encoding='utf-8', index_label=False)
+
+
+
+
+
+
+# print the words with high frequencies in each fake type 
+for fake_type in np.unique(df['fake']):
+    
+

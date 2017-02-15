@@ -63,12 +63,13 @@ axes.legend()
 axes.set_title('Post Length by Fake or Not')
 axes.set_xlabel('Post Length')
 
-## cut the post into words 
+## cut the post into words and count the frequent words for each fake type 
 import time
 start_time = time.time()
 import jieba 
-df['post_cut'] = df['post'].apply(lambda x: list(jieba.cut(x)))
+df['post_cut'] = df['post'].apply(lambda x: ';'.join(list(jieba.cut(x))))
 print(time.time() - start_time)
+
 # remove the stopwords and non-word symbol, and then count the words 
 # using mapping function 
 
@@ -82,7 +83,7 @@ import re
 def remove_stop_punc(text):
     text = re.sub(r'\W', ' ', text) # remove punctuations
     word_list = list(jieba.cut(text))
-    word_list = list(np.setdiff1d(word_list, (stop_words+[' '])))
+    word_list = ';'.join([word for word in word_list if not word in (stop_words+[' '])])
     
     return word_list
 
@@ -94,12 +95,29 @@ print(time.time() - start_time)
 #os.chdir(r'D:\Dataset\Side_project_Fake_account_detector')
 #df.to_csv('Account.csv', encoding='utf-8', index_label=False)
 
-
-
-
-
-
 # print the words with high frequencies in each fake type 
-for fake_type in np.unique(df['fake']):
-    
 
+df['post_cut_filtered'] = df['post_cut_filtered'].astype(str)
+df['post_cut_filtered'] = df['post_cut_filtered'].apply(lambda x: x.split(';'))
+
+from collections import Counter
+fake_counter = {}
+for fake_type in np.unique(df['fake']):
+    fake_counter[fake_type] = Counter([word for text in df['post_cut_filtered'][df['fake'] == fake_type]
+                                              for word in text])
+print(fake_counter[0].most_common(1000))  
+print(fake_counter[1].most_common(1000))  
+"""
+# loading the dataset
+
+import os 
+os.chdir(r'D:\Dataset\Side_project_Fake_account_detector')
+import numpy as np
+import scipy as sp
+import pandas as pd
+import matplotlib.pyplot as plt 
+%matplotlib inline 
+import seaborn as sns
+df = pd.read_csv('Account.csv', encoding='utf-8')
+
+"""
